@@ -47,6 +47,7 @@ class CPU6502 {
     uint8_t currentValue;
     uint16_t currentAddress;
     uint8_t cycles;
+    uint8_t pageBoundaryCrossed;
     AddressingMode addressingMode;
 
   public:

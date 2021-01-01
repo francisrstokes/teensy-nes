@@ -46,6 +46,7 @@ void CPU6502::AM_REL() {
 };
 
 void CPU6502::AM_ABS() {
+  if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
   currentAddress = read(pc) & (read(pc + 1) << 8);
   currentValue = read(currentAddress);
   pc += 2;
@@ -53,6 +54,7 @@ void CPU6502::AM_ABS() {
 };
 
 void CPU6502::AM_ABX() {
+  if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
   currentAddress = (read(pc) & (read(pc + 1) << 8)) + x;
   currentValue = read(currentAddress);
   pc += 2;
@@ -60,6 +62,7 @@ void CPU6502::AM_ABX() {
 };
 
 void CPU6502::AM_ABY() {
+  if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
   currentAddress = (read(pc) & (read(pc + 1) << 8)) + y;
   currentValue = read(currentAddress);
   pc += 2;
@@ -67,6 +70,7 @@ void CPU6502::AM_ABY() {
 };
 
 void CPU6502::AM_IND() {
+  if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
   currentAddress = read(pc) & (read(pc + 1) << 8);
   currentValue = read(currentAddress);
   pc += 2;
@@ -74,13 +78,15 @@ void CPU6502::AM_IND() {
 };
 
 void CPU6502::AM_INX() {
-  currentAddress = read((uint8_t)(read(pc) + x)) & read((uint8_t)(read(pc) + x + 1)) << 8;
+  if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
+  currentAddress = read((uint8_t)(read(pc) + x)) & (read((uint8_t)(read(pc) + x + 1)) << 8);
   currentValue = read(currentAddress);
   pc++;
   addressingMode = IndirectX;
 };
 
 void CPU6502::AM_INY() {
+  if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
   currentAddress = (read(read(pc)) & (read(read(pc) + 1) << 8)) + y;
   currentValue = read(currentAddress);
   pc++;
@@ -102,11 +108,23 @@ void CPU6502::I_ADC() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -121,11 +139,23 @@ void CPU6502::I_AND() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -156,24 +186,27 @@ void CPU6502::I_ASL() {
 
 void CPU6502::I_BCC() {
   if (BIT_VALUE(p, CARRY_BIT) == 0) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
 
 void CPU6502::I_BCS() {
   if (BIT_VALUE(p, CARRY_BIT)) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
 
 void CPU6502::I_BEQ() {
   if (BIT_VALUE(p, ZERO_BIT) == 0) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
@@ -194,24 +227,27 @@ void CPU6502::I_BIT() {
 
 void CPU6502::I_BMI() {
   if (BIT_VALUE(p, NEGATIVE_BIT)) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
 
 void CPU6502::I_BNE() {
   if (BIT_VALUE(p, ZERO_BIT)) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
 
 void CPU6502::I_BPL() {
   if (BIT_VALUE(p, NEGATIVE_BIT) == 0) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
@@ -223,16 +259,18 @@ void CPU6502::I_BRK() {
 
 void CPU6502::I_BVC() {
   if (BIT_VALUE(p, OVERFLOW_BIT) == 0) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
 
 void CPU6502::I_BVS() {
   if (BIT_VALUE(p, OVERFLOW_BIT)) {
+    uint16_t oldPc = pc;
     pc += (int8_t)currentValue;
-    cycles++;
+    cycles += (pc & 0xff00 != oldPc & 0xff00) ? 2 : 1;
   }
   cycles += 2;
 };
@@ -266,11 +304,23 @@ void CPU6502::I_CMP() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 6; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -342,11 +392,23 @@ void CPU6502::I_EOR() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -409,11 +471,23 @@ void CPU6502::I_LDA() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -428,8 +502,12 @@ void CPU6502::I_LDX() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageY:
-    case Absolute:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     default: break;
   }
 };
@@ -444,8 +522,12 @@ void CPU6502::I_LDY() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     default: break;
   }
 };
@@ -483,15 +565,27 @@ void CPU6502::I_ORA() {
   ASSIGN_BIT(p, ZERO_BIT, a == 0);
   ASSIGN_BIT(p, NEGATIVE_BIT, (a & 0x80) >> 7);
 
-  switch (addressingMode) {
+   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -588,11 +682,23 @@ void CPU6502::I_SBC() {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
     case ZeroPageX:
-    case Absolute:
-    case AbsoluteX:
-    case AbsoluteY: cycles += 4; break;
+    case Absolute: cycles += 4; break;
+    case AbsoluteX: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
+    case AbsoluteY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 4;
+      break;
+    }
     case IndirectX: cycles += 6; break;
-    case IndirectY: cycles += 5; break;
+    case IndirectY: {
+      if (pageBoundaryCrossed) cycles++;
+      cycles += 5;
+      break;
+    }
     default: break;
   }
 };
@@ -692,6 +798,7 @@ void CPU6502::I_TYA() {
 // High Level CPU Control
 void CPU6502::step() {
   cycles = 0;
+  pageBoundaryCrossed = 0;
   uint8_t opcode = read(pc++);
 
   switch (opcode) {
@@ -971,18 +1078,15 @@ uint8_t CPU6502::read(uint16_t address) {
 };
 
 void CPU6502::push(uint8_t value) {
-  // TODO
+  (*bus).write((1 << 8) | sp--, value);
 };
 
 uint8_t CPU6502::pop() {
-  // TODO
-  return 0;
+  return (*bus).read(((1 << 8) | sp++) + 1);
 };
 
 void CPU6502::printCPUState() {
-  printf("A=%hhx\n", a);
-  printf("X=%hhx\n", x);
-  printf("Y=%hhx\n", y);
+  printf("A=%hhx X=%hhx Y=%hhx\n", a, x, y);
   printf(
     "N=%hhx V=%hhx B=%hhx D=%hhx I=%hhx Z=%hhx C=%hhx\n",
     BIT_VALUE(p, NEGATIVE_BIT),
