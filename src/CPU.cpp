@@ -47,7 +47,7 @@ void CPU6502::AM_REL() {
 
 void CPU6502::AM_ABS() {
   if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
-  currentAddress = read(pc) & (read(pc + 1) << 8);
+  currentAddress = read(pc) | (read(pc + 1) << 8);
   currentValue = read(currentAddress);
   pc += 2;
   addressingMode = Absolute;
@@ -55,7 +55,7 @@ void CPU6502::AM_ABS() {
 
 void CPU6502::AM_ABX() {
   if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
-  currentAddress = (read(pc) & (read(pc + 1) << 8)) + x;
+  currentAddress = (read(pc) | (read(pc + 1) << 8)) + x;
   currentValue = read(currentAddress);
   pc += 2;
   addressingMode = AbsoluteX;
@@ -63,7 +63,7 @@ void CPU6502::AM_ABX() {
 
 void CPU6502::AM_ABY() {
   if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
-  currentAddress = (read(pc) & (read(pc + 1) << 8)) + y;
+  currentAddress = (read(pc) | (read(pc + 1) << 8)) + y;
   currentValue = read(currentAddress);
   pc += 2;
   addressingMode = AbsoluteY;
@@ -71,7 +71,7 @@ void CPU6502::AM_ABY() {
 
 void CPU6502::AM_IND() {
   if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
-  currentAddress = read(pc) & (read(pc + 1) << 8);
+  currentAddress = read(pc) | (read(pc + 1) << 8);
   currentValue = read(currentAddress);
   pc += 2;
   addressingMode = Indirect;
@@ -79,7 +79,7 @@ void CPU6502::AM_IND() {
 
 void CPU6502::AM_INX() {
   if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
-  currentAddress = read((uint8_t)(read(pc) + x)) & (read((uint8_t)(read(pc) + x + 1)) << 8);
+  currentAddress = read((uint8_t)(read(pc) + x)) | (read((uint8_t)(read(pc) + x + 1)) << 8);
   currentValue = read(currentAddress);
   pc++;
   addressingMode = IndirectX;
@@ -87,7 +87,7 @@ void CPU6502::AM_INX() {
 
 void CPU6502::AM_INY() {
   if (pc & 0xff == 0xff) pageBoundaryCrossed = 1;
-  currentAddress = (read(read(pc)) & (read(read(pc) + 1) << 8)) + y;
+  currentAddress = (read(read(pc)) | (read(read(pc) + 1) << 8)) + y;
   currentValue = read(currentAddress);
   pc++;
   addressingMode = IndirectY;
