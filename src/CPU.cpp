@@ -107,7 +107,7 @@ void CPU6502::I_ADC() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -138,7 +138,7 @@ void CPU6502::I_AND() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -177,7 +177,7 @@ void CPU6502::I_ASL() {
   switch (addressingMode) {
     case Accumulator: cycles += 2; break;
     case ZeroPage: cycles += 5; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 6; break;
     case Absolute: cycles += 6; break;
     case AbsoluteX: cycles += 7; break;
     default: break;
@@ -303,7 +303,7 @@ void CPU6502::I_CMP() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -361,7 +361,7 @@ void CPU6502::I_DEC() {
 
   switch (addressingMode) {
     case ZeroPage: cycles += 5; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 6; break;
     case Absolute: cycles += 6; break;
     case AbsoluteX: cycles += 7; break;
     default: break;
@@ -391,7 +391,7 @@ void CPU6502::I_EOR() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -423,7 +423,7 @@ void CPU6502::I_INC() {
 
   switch (addressingMode) {
     case ZeroPage: cycles += 5; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 6; break;
     case Absolute: cycles += 6; break;
     case AbsoluteX: cycles += 7; break;
     default: break;
@@ -470,7 +470,7 @@ void CPU6502::I_LDA() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -501,7 +501,7 @@ void CPU6502::I_LDX() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageY:
+    case ZeroPageY: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteY: {
       if (pageBoundaryCrossed) cycles++;
@@ -521,7 +521,7 @@ void CPU6502::I_LDY() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -548,8 +548,8 @@ void CPU6502::I_LSR() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
-    case Absolute:
+    case ZeroPageX: cycles += 4; break;
+    case Absolute: cycles += 4; break;
     case AbsoluteX: cycles += 4; break;
     default: break;
   }
@@ -568,7 +568,7 @@ void CPU6502::I_ORA() {
    switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -626,7 +626,7 @@ void CPU6502::I_ROL() {
   switch (addressingMode) {
     case Accumulator: cycles += 2; break;
     case ZeroPage: cycles += 5; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 6; break;
     case Absolute: cycles += 6; break;
     case AbsoluteX: cycles += 7; break;
     default: break;
@@ -649,7 +649,7 @@ void CPU6502::I_ROR() {
   switch (addressingMode) {
     case Accumulator: cycles += 2; break;
     case ZeroPage: cycles += 5; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 6; break;
     case Absolute: cycles += 6; break;
     case AbsoluteX: cycles += 7; break;
     default: break;
@@ -681,7 +681,7 @@ void CPU6502::I_SBC() {
   switch (addressingMode) {
     case Immediate: cycles += 2; break;
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     case AbsoluteX: {
       if (pageBoundaryCrossed) cycles++;
@@ -723,11 +723,11 @@ void CPU6502::I_STA() {
 
   switch (addressingMode) {
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
-    case AbsoluteX:
+    case AbsoluteX: cycles += 5; break;
     case AbsoluteY: cycles += 5; break;
-    case IndirectX:
+    case IndirectX: cycles += 6; break;
     case IndirectY: cycles += 6; break;
     default: break;
   }
@@ -738,7 +738,7 @@ void CPU6502::I_STX() {
 
   switch (addressingMode) {
     case ZeroPage: cycles += 3; break;
-    case ZeroPageY:
+    case ZeroPageY: cycles += 4; break;
     case Absolute: cycles += 4; break;
     default: break;
   }
@@ -749,7 +749,7 @@ void CPU6502::I_STY() {
 
   switch (addressingMode) {
     case ZeroPage: cycles += 3; break;
-    case ZeroPageX:
+    case ZeroPageX: cycles += 4; break;
     case Absolute: cycles += 4; break;
     default: break;
   }
